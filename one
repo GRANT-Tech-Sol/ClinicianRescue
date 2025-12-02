@@ -1,0 +1,62 @@
+import streamlit as st
+import json
+
+st.set_page_config(page_title="Clinician Rescue AI Demo", layout="wide")
+st.title("🩺 Clinician Rescue AI")
+st.markdown("**Australian Provisional Patent – Priority 02 December 2025** | Fully FHIR-native, offline-ready")
+
+# Demo patient (synthetic data)
+if "patient" not in st.session_state:
+    st.session_state.patient = {
+        "name": "Sarah Thompson",
+        "mrn": "ST-784512",
+        "allergies": ["Penicillin", "Latex"],
+        "meds": ["Metformin 500mg BD", "Aspirin 100mg daily", "Warfarin 3mg nocte"],
+        "labs": "INR 2.8 (therapeutic), Hb 112 g/L, Creatinine 89 µmol/L"
+    }
+
+col1, col2 = st.columns([3, 1])
+with col1:
+    st.info(f"**Patient:** {st.session_state.patient['name']} | MRN: {st.session_state.patient['mrn']}")
+    st.info(f"**Allergies:** {', '.join(st.session_state.patient['allergies'])}")
+    st.info(f"**Current Meds:** {', '.join(st.session_state.patient['meds'])}")
+    st.info(f"**Recent Labs:** {st.session_state.patient['labs']}")
+
+with col2:
+    st.caption("**Try these commands:**")
+    st.code("Order urgent CT chest\nCardiology referral\nReconcile meds\nCheck warfarin interactions")
+
+# Chat input
+user_input = st.chat_input("Enter your clinical command (or speak in real demo)...")
+
+if user_input:
+    with st.chat_message("user"):
+        st.write(user_input)
+
+    with st.chat_message("assistant"):
+        with st.spinner("🔄 Fetching FHIR data • Processing • Validating • Writing to EMR..."):
+            # Simulate AI response based on input
+            if "ct" in user_input.lower() or "mri" in user_input.lower():
+                action = "Diagnostic Imaging Order Created"
+                details = "FHIR ServiceRequest: CT Chest with contrast (urgent) – Status: Active"
+            elif "refer" in user_input.lower() or "cardio" in user_input.lower():
+                action = "Specialist Referral Generated"
+                details = "FHIR ServiceRequest: Cardiology Consult – Reason: New AF, Priority: Routine"
+            elif "reconcile" in user_input.lower() or "med" in user_input.lower():
+                action = "Medication Reconciliation Completed"
+                details = "FHIR MedicationStatement updated: 3 active meds reconciled, no discrepancies"
+            elif "interact" in user_input.lower() or "warfarin" in user_input.lower():
+                action = "Drug Interaction Check"
+                details = "RxNorm analysis: Warfarin + Aspirin = Moderate risk (bleeding) – Alert suppressed per context"
+            else:
+                action = "Progress Note Documented"
+                details = "FHIR Encounter note added: Sacral pressure injury stage 2, measurements recorded"
+
+            st.success(f"✅ **Action Completed in 3.8s**")
+            st.markdown(f"**{action}:** {details}")
+            st.info("**FHIR Write-Back:** Changes synced to EMR | Audit logged | Offline queue: 0 pending")
+
+# Footer
+st.markdown("---")
+st.caption("*Live demo using synthetic data. Production version integrates with real FHIR EMRs.*")
+st.caption("Ready for NSW Health pilot – Contact for private demo.")
